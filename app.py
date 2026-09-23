@@ -16,38 +16,33 @@ st.set_page_config(
 if "history" not in st.session_state:
     st.session_state.history = []
 
-# ---------------- CSS ----------------
+# ---------------- CUSTOM CSS ----------------
 
 st.markdown("""
 <style>
-.main {
-    background-color: #0b1220;
-}
 
 .block-container {
     padding-top: 2rem;
+    padding-bottom: 2rem;
 }
 
 .title {
-    font-size: 42px;
+    font-size: 45px;
     font-weight: 800;
 }
 
 .subtitle {
-    font-size: 18px;
+    font-size: 20px;
+    margin-bottom: 10px;
 }
 
-.result-box {
-    padding: 25px;
+.student-card {
+    padding: 18px;
     border-radius: 15px;
-    margin-top: 20px;
+    border: 1px solid rgba(128,128,128,0.3);
+    margin: 20px 0;
 }
 
-.signal {
-    padding: 10px;
-    border-radius: 8px;
-    margin: 5px 0;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -64,6 +59,21 @@ st.markdown(
     '</div>',
     unsafe_allow_html=True
 )
+
+st.markdown("""
+<div class="student-card">
+
+### 👩‍💻 Project Presented By
+
+**Banirupa Mohapatra**
+
+**Jagadguru Kripalu University**
+
+**Branch:** CSE – AI with Cloud Computing  
+**Section:** A
+
+</div>
+""", unsafe_allow_html=True)
 
 st.write(
     "A local-first cybersecurity prototype that analyzes "
@@ -96,9 +106,12 @@ def analyze_input(text):
         "account will be suspended"
     ]
 
-    found = [word for word in urgency_words if word in text_lower]
+    found_urgency = [
+        word for word in urgency_words
+        if word in text_lower
+    ]
 
-    if found:
+    if found_urgency:
         score += 20
         signals.append(
             "⚠️ Urgent or threatening language detected"
@@ -117,15 +130,18 @@ def analyze_input(text):
         "verification code"
     ]
 
-    found = [word for word in sensitive_words if word in text_lower]
+    found_sensitive = [
+        word for word in sensitive_words
+        if word in text_lower
+    ]
 
-    if found:
+    if found_sensitive:
         score += 30
         signals.append(
             "🔐 Request for sensitive information detected"
         )
 
-    # ---------- MONEY ----------
+    # ---------- FINANCIAL CONTENT ----------
 
     financial_words = [
         "payment",
@@ -146,7 +162,7 @@ def analyze_input(text):
             "💰 Financial or reward-related request detected"
         )
 
-    # ---------- URL ----------
+    # ---------- URL ANALYSIS ----------
 
     urls = re.findall(
         r'https?://[^\s]+',
@@ -162,37 +178,49 @@ def analyze_input(text):
         domain = parsed.netloc.lower()
 
         # IP address URL
+
         if re.match(
             r'^(\d{1,3}\.){3}\d{1,3}$',
             domain.split(":")[0]
         ):
             score += 25
+
             signals.append(
                 "🌐 URL uses an IP address instead of a normal domain"
             )
 
         # HTTP instead of HTTPS
+
         if parsed.scheme == "http":
+
             score += 10
+
             signals.append(
                 "🔓 Website does not use HTTPS"
             )
 
         # Very long URL
+
         if len(url) > 100:
+
             score += 10
+
             signals.append(
                 "🔎 Unusually long URL detected"
             )
 
         # Too many subdomains
+
         if domain.count(".") >= 3:
+
             score += 10
+
             signals.append(
                 "🌐 Unusual number of subdomains detected"
             )
 
-        # Suspicious URL words
+        # Suspicious URL keywords
+
         suspicious_url_words = [
             "login",
             "verify",
@@ -204,8 +232,13 @@ def analyze_input(text):
             "free"
         ]
 
-        if any(word in domain for word in suspicious_url_words):
+        if any(
+            word in domain
+            for word in suspicious_url_words
+        ):
+
             score += 10
+
             signals.append(
                 "🚨 Suspicious keywords found in URL"
             )
@@ -224,8 +257,13 @@ def analyze_input(text):
         "claim your reward"
     ]
 
-    if any(pattern in text_lower for pattern in scam_patterns):
+    if any(
+        pattern in text_lower
+        for pattern in scam_patterns
+    ):
+
         score += 20
+
         signals.append(
             "🚨 Possible phishing/scam pattern detected"
         )
@@ -237,19 +275,27 @@ def analyze_input(text):
     # ---------- CLASSIFICATION ----------
 
     if score >= 60:
+
         level = "HIGH RISK"
         icon = "🔴"
         action = "BLOCK / AVOID"
+
     elif score >= 30:
+
         level = "SUSPICIOUS"
         icon = "🟡"
         action = "WARN USER"
+
     else:
+
         level = "LOW RISK"
         icon = "🟢"
         action = "ALLOW"
 
+    # ---------- NO SIGNALS ----------
+
     if not signals:
+
         signals.append(
             "✅ No major suspicious signals detected"
         )
@@ -257,7 +303,7 @@ def analyze_input(text):
     return score, level, icon, action, signals
 
 
-# ---------------- INPUT ----------------
+# ---------------- SCANNER ----------------
 
 st.subheader("🔍 Threat Scanner")
 
@@ -280,7 +326,7 @@ user_input = st.text_area(
     )
 )
 
-# ---------------- SCAN ----------------
+# ---------------- SCAN BUTTON ----------------
 
 if st.button(
     "🔎 SCAN FOR THREATS",
@@ -299,7 +345,8 @@ if st.button(
             user_input
         )
 
-        # Save history
+        # Save scan history
+
         st.session_state.history.append({
             "time": datetime.now().strftime("%H:%M:%S"),
             "type": scan_type,
@@ -309,53 +356,62 @@ if st.button(
 
         st.divider()
 
-        # ---------- RESULT ----------
+        # ---------------- RESULT ----------------
 
         st.subheader("📊 Analysis Result")
 
         col1, col2, col3 = st.columns(3)
 
         with col1:
+
             st.metric(
                 "Risk Score",
                 f"{score}/100"
             )
 
         with col2:
+
             st.metric(
                 "Threat Level",
                 level
             )
 
         with col3:
+
             st.metric(
                 "Recommended Action",
                 action
             )
 
+        # ---------------- STATUS ----------------
+
         if score >= 60:
+
             st.error(
-                f"{icon} {level} — Possible phishing/scam"
+                f"{icon} {level} — Possible phishing / scam"
             )
 
         elif score >= 30:
+
             st.warning(
                 f"{icon} {level}"
             )
 
         else:
+
             st.success(
                 f"{icon} {level}"
             )
 
-        # ---------- SIGNALS ----------
+        # ---------------- SIGNALS ----------------
 
         st.subheader("🔎 Detected Threat Signals")
 
         for signal in signals:
+
             st.write(signal)
 
-        # ---------- EXPLANATION ----------
+        # ---------------- RECOMMENDATION ----------------
 
         st.subheader("💡 Safety Recommendation")
 
@@ -381,7 +437,7 @@ if st.button(
             )
 
 
-# ---------------- HISTORY ----------------
+# ---------------- SCAN HISTORY ----------------
 
 st.divider()
 
@@ -407,11 +463,37 @@ else:
     )
 
 
+# ---------------- PROJECT INFORMATION ----------------
+
+st.divider()
+
+st.subheader("ℹ️ About This Project")
+
+st.write(
+    "**PhishShield AI** is an educational cybersecurity "
+    "prototype developed to demonstrate local-first "
+    "phishing and scam detection."
+)
+
+st.write(
+    "The system analyzes threat signals from messages "
+    "and URLs and produces an explainable risk score."
+)
+
+st.write(
+    "**Presented by:** Banirupa Mohapatra"
+)
+
+st.write(
+    "**Jagadguru Kripalu University | "
+    "CSE – AI with Cloud Computing | Section A**"
+)
+
 # ---------------- FOOTER ----------------
 
 st.divider()
 
 st.caption(
-    "PhishShield AI v1 • Educational cybersecurity prototype • "
-    "Local-first threat analysis"
+    "PhishShield AI v1 • Educational Cybersecurity Prototype • "
+    "Local-First Threat Analysis"
 )
