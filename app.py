@@ -1,4 +1,4 @@
-import streamlit as st
+uimport streamlit as st
 import re
 from urllib.parse import urlparse
 from datetime import datetime
@@ -65,12 +65,10 @@ st.markdown("""
 
 ### 👩‍💻 Project Presented By
 
-**Banirupa Mohapatra**
+**Anshuman Dash**
 
-**Jagadguru Kripalu University**
+**gymrat 💪**
 
-**Branch:** CSE – AI with Cloud Computing  
-**Section:** A
 
 </div>
 """, unsafe_allow_html=True)
